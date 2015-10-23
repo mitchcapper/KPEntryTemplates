@@ -90,6 +90,7 @@ just work as it did on your last computer.
 
 INSTALLATION
 -----
+- Download from https://github.com/mitchcapper/KPEntryTemplates/releases
 - Extract the plug-in (KPEntryTemplates.plgx) and place in the KeePass 
 program directory
 
