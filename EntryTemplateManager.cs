@@ -242,9 +242,13 @@ namespace KPEntryTemplates {
 					else
 						buttons_show();
 					am_current_tab = true;
-					if (entry_is_child & our_page != null && our_page.Controls.Count > 1){
-						TextBox box = our_page.Controls[1] as TextBox;
-						box.Select(0, 0);
+					if (entry_is_child & our_page != null && our_page.Controls.Count > 1) {
+						var first_elem = our_page.Controls[1] as Control;
+						var text = first_elem as TextBox;
+						if (text != null)
+							text.Select(0,0);
+						else if (first_elem.CanFocus)
+							first_elem.Focus();
 					}
 				}
 				
