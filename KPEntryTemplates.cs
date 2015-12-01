@@ -99,7 +99,7 @@ namespace KPEntryTemplates {
 		}
 		public override string UpdateUrl {
 			get {
-				return "http://mitchcapper.com/keepass_versions.txt";
+				return "http://mitchcapper.com/keepass_versions.txt?KPET";
 			}
 		}
 		public override void Terminate() {
