@@ -8,6 +8,7 @@ using KeePass.Forms;
 using KeePass.Plugins;
 using KeePass.Resources;
 using KeePass.UI;
+using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Security;
@@ -238,12 +239,14 @@ namespace KPEntryTemplates {
 						picker.ShowCheckBox = true;
 					et_to_control[t] = picker;
 				}
-				else if (t.type == "Inline" || t.type == "Protected Inline") {
+				else if (t.type == "Inline" || t.type == "Protected Inline" || t.type == "Inline URL") {
 					TextBox box = new TextBox();
 					box.Top = control_offset_y;
 					box.Left = LEFT_CONTROL_OFFSET;
-					box.Width = CONTROL_WIDTH;
+					box.Width = t.type == "Inline URL" ? CONTROL_WIDTH-30 : CONTROL_WIDTH;
 					int lines = LinesFromOption(t.options);
+					if (t.type == "Inline URL")
+						lines = 1;
 					if (lines > 1) {
 						box.Multiline = true;
 						box.AcceptsReturn = true;
@@ -278,9 +281,15 @@ namespace KPEntryTemplates {
 						}
 						if (t.fieldName == PwDefs.PasswordField) {
 							entry_pass = current_password_field = sedit;
-							
 						}
+					}else if (t.type == "Inline URL") {
+						var link= new LinkLabel {Text = "Open"};
+						link.LinkClicked += (sender, args) => WinUtil.OpenUrl(box.Text??"", form.EntryRef);
+						link.Location = new Point(box.Left + box.Width + 10, control_offset_y);
+						link.Width = 50;
+						et_to_control2[t] = link;
 					}
+
 				}
 				else if (t.type == "Popout" || t.type == "Protected Popout") {
 					Button btn = new Button();
@@ -388,7 +397,7 @@ namespace KPEntryTemplates {
 					CheckBox checkbox = (CheckBox)pair.Value;
 					str = new ProtectedString(false, checkbox.Checked.ToString());
 				}
-				else if (t.type == "Inline") {
+				else if (t.type == "Inline" || t.type == "Inline URL") {
 					TextBox box = (TextBox)pair.Value;
 					str = new ProtectedString(false, box.Text == null ? "" : box.Text.Replace("\r", ""));
 				}
@@ -470,7 +479,7 @@ namespace KPEntryTemplates {
 					str = form.EntryStrings.Get(get_name);
 				if (str == null)
 					str = new ProtectedString(t.type.StartsWith("Protected"), "");
-				if (t.type == "Inline") {
+				if (t.type == "Inline" || t.type == "Inline URL") {
 					TextBox box = (TextBox)pair.Value;
 					String val = str.ReadString();
 					val = val.Replace("\r", "");

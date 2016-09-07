@@ -3,6 +3,7 @@ KP Entry Templates for KeePass 2.x
 
 CHANGES
 -----
+- 7.3 Added inline url option that has a clickable link to open the url
 - 7.2 Fixed bug that prevented working on *nix platforms, thanks to @x09
 - 7.01 Fixed bug causing crash if first field was not a textbox on a template
 - 7.0 Moved to git(hub), KP 2.3 support, High DPI support

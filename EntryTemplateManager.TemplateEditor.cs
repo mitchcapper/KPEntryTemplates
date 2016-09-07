@@ -107,6 +107,7 @@ namespace KPEntryTemplates {
 			colType.Width = 100;
 			colType.Items.AddRange(new object[] {
             "Inline",
+			"Inline URL",
             "Popout",
             "Protected Inline",
             "Protected Popout",
@@ -115,7 +116,8 @@ namespace KPEntryTemplates {
 			"Date Time",
 			"Checkbox",
 			"Divider",
-			"Listbox"});
+			"Listbox"
+			});
 			colType.DropDownWidth = 150;
             colOpt.HeaderText = "Opt";
 			colOpt.Name = "colOpt";
@@ -247,7 +249,7 @@ namespace KPEntryTemplates {
 					break;
 				case "URL":
 					fieldName = PwDefs.UrlField;
-					type = conf.ProtectUrl ? "Protected Inline" : "Inline";
+					type = conf.ProtectUrl ? "Protected Inline" : "Inline URL";
 					break;
 				case "Override URL":
 					fieldName = "@override";
