@@ -1,8 +1,9 @@
-KPEntry Templates for KeePass 2.x
+KP Entry Templates for KeePass 2.x
 =================================
 
 CHANGES
 -----
+- 7.2 Fixed bug that prevented working on *nix platforms, thanks to @x09
 - 7.01 Fixed bug causing crash if first field was not a textbox on a template
 - 7.0 Moved to git(hub), KP 2.3 support, High DPI support
 - 6.0 Bugfixes, listbox/combobox support, specify number of lines for inline boxes, KP 2.18 support
