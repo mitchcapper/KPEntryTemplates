@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+project.lock.json
 
 # Build results
 
@@ -76,6 +77,10 @@ _TeamCity*
 *.ncrunch*
 .*crunch*.local.xml
 
+Service References/
+*.nuget.targets
+
+.vs/
 # Installshield output folder
 [Ee]xpress/
 
