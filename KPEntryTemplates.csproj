@@ -52,6 +52,7 @@
       <HintPath>..\..\save\keepass_bin\KeePass.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />

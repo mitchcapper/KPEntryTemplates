@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -8,6 +8,8 @@ using KeePassLib;
 using KeePassLib.Collections;
 using KeePassLib.Security;
 using KeePassLib.Utility;
+using KeePass.UI;
+using KeePass.Resources;
 
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
@@ -154,14 +156,37 @@ namespace KPEntryTemplates {
 			return entries;
 		}
 		public static PwEntry show_parent_template_chooser(IPluginHost m_host) {
-			EntryListForm elf = new EntryListForm();
-			PwObjectList<PwEntry> entries = GetPossibleTemplates(m_host);
-			elf.InitEx("Select Parent Template Entry", "Selecting Parent Template Entry", "Select the parent entry to use as a template", Resources.Resources.B48x48_Folder_Txt, m_host.MainWindow.ClientIcons, entries);
-			elf.EnsureForeground = true;
+			var list_type = Type.GetType("KeePass.Forms.ListViewForm,KeePass");
+			var elf_type = Type.GetType("KeePass.Forms.EntryListForm,KeePass");
+			var entries = GetPossibleTemplates(m_host);
+			if (list_type != null) {
+				dynamic elf = Activator.CreateInstance(list_type);
+				var entry_list = new List<object>();
+				foreach (var entry in entries) {
+					var lvi = new ListViewItem(entry.Strings.ReadSafe(PwDefs.TitleField),
+						entry.CustomIconUuid == PwUuid.Zero ? (int)entry.IconId : m_host.Database.GetCustomIconIndex(entry.CustomIconUuid));
+					lvi.Tag = entry;
+					entry_list.Add(lvi);
+				}
 
-			if (elf.ShowDialog() != DialogResult.OK || elf.SelectedEntry == null)
-				return null;
-			return elf.SelectedEntry;
+
+				elf.InitEx("Select Parent Template Entry", "Selecting Parent Template Entry", "Select the parent entry to use as a template",
+					Resources.Resources.B48x48_Folder_Txt, entry_list, m_host.MainWindow.ClientIcons, (Action<ListView>)((lv) => { lv.Columns.Add(KPRes.Title, lv.ClientSize.Width - UIUtil.GetVScrollBarWidth()); }));
+				elf.EnsureForeground = true;
+
+				if (elf.ShowDialog() != DialogResult.OK)
+					return null;
+				return elf.ResultItem as PwEntry;
+			} else if (elf_type != null) {
+				dynamic elf = Activator.CreateInstance(elf_type);
+				elf.InitEx("Select Parent Template Entry", "Selecting Parent Template Entry", "Select the parent entry to use as a template", Resources.Resources.B48x48_Folder_Txt, m_host.MainWindow.ClientIcons, entries);
+				elf.EnsureForeground = true;
+				if (elf.ShowDialog() != DialogResult.OK)
+					return null;
+				return elf.SelectedEntry;
+
+			} else
+				throw new Exception("No EntryLListForm or ListViewForm? I am not sure how to work with this version of keepass");
 		}
 		public static string get_entry_template_parent_uuid(PwEntry entry) {
 			ProtectedString str = entry.Strings.Get("_etm_template_uuid");
