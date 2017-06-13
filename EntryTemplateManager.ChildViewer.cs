@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -160,6 +160,14 @@ namespace KPEntryTemplates {
 			}
 			return ret;
 		}
+
+		//private int ScaleX(int i) {
+		//	return DpiUtil.ScaleIntX(i);
+		//}
+		//private int ScaleY(int i) {
+		//	return DpiUtil.ScaleIntY(i);
+		//}
+
 		private bool InitializeChildView(TabPage page, String uuid) {
 			if (et_to_label != null) {
 				add_child_items_to_tab(page);
@@ -187,11 +195,13 @@ namespace KPEntryTemplates {
 			int CONTROL_WIDTH = TAB_WIDTH - LABEL_WIDTH - 55;
 			foreach (EntryTemplate t in cur) {
 				Label label = new Label();
+				label.Text = t.title + ":";
+				//label.AutoSize = false;
 				label.Top = control_offset_y;
 				label.Left = 0;
-				label.Text = t.title + ":";
 				label.AutoSize = false;
 				label.Width = LABEL_WIDTH;
+
 				label.AutoEllipsis = true;
 				label.TextAlign = ContentAlignment.MiddleRight;
 				FontUtil.AssignDefaultBold(label);
