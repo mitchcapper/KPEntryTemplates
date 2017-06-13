@@ -9,10 +9,11 @@ CHANGES
 - 7.0 Moved to git(hub), KP 2.3 support, High DPI support
 - 6.0 Bugfixes, listbox/combobox support, specify number of lines for inline boxes, KP 2.18 support
 
+![KPEntryTemplates Screenshot](https://raw.githubusercontent.com/mitchcapper/KPEntryTemplates/master/screenshot.png "KPEntryTemplates Screenshot")
 
 OVERVIEW
 -----
-KPEntryTemplates is a plug-in that is supposed to make it easier for 
+KPEntryTemplates (KPET) is a plug-in that is supposed to make it easier for 
 KeePass to be used for storing additional things than web logins and extend 
 the best templating system.  The primary interface for the plug-in is an 
 extra tab that shows up in the main Add Entry form.   By default going to 
