@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -365,7 +365,7 @@ namespace KPEntryTemplates {
 			String old_row_err = validate_row(row, false, null);
 			if (String.IsNullOrEmpty(old_row_err))
 				return;
-			DialogResult res = MessageBox.Show("The old row values are not valid, if you continue to cancel we will delete the row", "Error Editing Row", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+			DialogResult res = MessageBox.Show("The old row values are not valid, if you continue to cancel we will delete the row (make sure all fields are filled out and not named after another)", "Error Editing Row", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
 			if (res != DialogResult.Retry) {
 				dataGridView.CancelEdit();
 				to_del = row;
