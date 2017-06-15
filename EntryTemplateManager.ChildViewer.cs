@@ -225,6 +225,7 @@ namespace KPEntryTemplates {
 					ComboBox combobox = new ComboBox();
 					combobox.Top = control_offset_y;
 					combobox.Left = LEFT_CONTROL_OFFSET;
+					combobox.Width = CONTROL_WIDTH;
 					et_to_control[t] = combobox;
 					if (!String.IsNullOrEmpty(t.options)){
 						String[] opts = t.options.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);

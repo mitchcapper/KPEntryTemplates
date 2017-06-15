@@ -3,6 +3,7 @@ KP Entry Templates for KeePass 2.x
 
 CHANGES
 -----
+- 7.6 ComboBox width fixed to full size (rather than smallest entry)
 - 7.5 Compatibility with KeePass 2.36 and better
 - 7.3 Added inline url option that has a clickable link to open the url
 - 7.2 Fixed bug that prevented working on *nix platforms, thanks to @x09
@@ -92,6 +93,11 @@ Template Child) There is _no_ outside data or configuration stored. Meaning
 you do not have to copy settings or additional files, if you copy your 
 keepass database to another computer and have the plug-in installed it will 
 just work as it did on your last computer.
+
+
+DEFAULT VALUES  
+-----  
+In order to save default values inside template one should know a small trick: the name of your field on `Template` tab should be the same with the name of string field ("Field Name" on the main GUI). I.e. every field to be defaulted should have correspondent field on `Advanced` tab populated with some value to give it a default. 
 
 INSTALLATION
 -----
