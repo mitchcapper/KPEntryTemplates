@@ -12,6 +12,7 @@ using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Security;
+
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
 		Dictionary<EntryTemplate, Label> et_to_label;
@@ -193,7 +194,7 @@ namespace KPEntryTemplates {
 			List<EntryTemplate> cur = parse_entry(par_template.Strings);
 			const int LABEL_WIDTH = 130;
 			const int LEFT_CONTROL_OFFSET = LABEL_WIDTH + 5;
-			int CONTROL_WIDTH = TAB_WIDTH - LABEL_WIDTH - 55;
+            int CONTROL_WIDTH = page.ClientSize.Width - LABEL_WIDTH - 55;
 			foreach (EntryTemplate t in cur) {
 				Label label = new Label();
 				label.Text = t.title + ":";
