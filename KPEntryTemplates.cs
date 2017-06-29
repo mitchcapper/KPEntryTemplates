@@ -7,6 +7,7 @@ using KeePass.Plugins;
 using KeePass.UI;
 using KeePass.Util;
 using KeePassLib;
+
 namespace KPEntryTemplates {
 	public sealed class KPEntryTemplatesExt : Plugin {
 		private IPluginHost m_host;
@@ -16,7 +17,8 @@ namespace KPEntryTemplates {
 		private System.ComponentModel.CancelEventHandler entry_context_menu_opening_handler;
 		private EventHandler<TemplateEntryEventArgs> entry_templates_entry_creating_handler;
 		private EventHandler<GwmWindowEventArgs> global_window_manager_window_added_handler;
-		public override bool Initialize(IPluginHost host) {
+
+        public override bool Initialize(IPluginHost host) {
 			Debug.Assert(host != null);
 			if (host == null) return false;
 			m_host = host;
@@ -48,12 +50,50 @@ namespace KPEntryTemplates {
 			if (form == null)
 				return;
 			form.Shown += form_Shown;
+            form.Resize += form_Resize;
 		}
 
-		void form_Shown(object sender, EventArgs e) {
-			PwEntryForm form = sender as PwEntryForm;
-			new EntryTemplateManager(m_host, form);
-		}
+        void form_Shown(object sender, EventArgs e)
+        {
+            PwEntryForm form = sender as PwEntryForm;
+            new EntryTemplateManager(m_host, form);
+        }
+
+        void form_Resize(object sender, EventArgs e)
+        {
+            // on form resize, change edits and bottom button widths;
+            // also reposition right side buttons
+
+            PwEntryForm form = sender as PwEntryForm;
+
+            TabControl tabControl = null;
+            foreach (Control c in form.Controls) {
+                if (c is TabControl) {
+                    tabControl = c as TabControl;
+                    break;
+                }
+            }
+            if (tabControl == null) return;
+
+            TabPage tmplPage = tabControl.TabPages[0];
+            if (tmplPage.Text != "Template") return;
+
+            foreach (Control c in tmplPage.Controls) {
+                if (!(c is Label)) {
+                    if (c is CheckBox) {
+                        c.Left = tmplPage.Width - ((c.Width + 55) / 2);
+                    } else if (c is Button) {
+                        if ((c as Button).Text == "Remove As Template Child") {
+                            c.Width = tmplPage.Width - c.Left - 55;
+                        } else {
+                            c.Left = tmplPage.Width - ((c.Width + 55) / 2);
+                        }
+                    } else {
+                        c.Width = tmplPage.Width - c.Left - 55;
+                    }
+                }
+            }
+        }
 
 		void EntryTemplates_EntryCreating(object sender, TemplateEntryEventArgs e) {
 			EntryTemplateManager.InitChildEntry(e.TemplateEntry, e.Entry);
@@ -86,6 +126,7 @@ namespace KPEntryTemplates {
 		private bool show_copy_menu() {
 			return m_host.MainWindow.GetSelectedEntriesCount() == 1 && EntryTemplateManager.is_template_child(m_host.MainWindow.GetSelectedEntry(false));
 		}
+
 		void EntryContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e) {
 			m_tsmi_set_template_parent.Enabled = m_host.MainWindow.GetSelectedEntriesCount() != 0;
 			m_tsmi_copy_template_string.Visible = show_copy_menu();
@@ -97,11 +138,13 @@ namespace KPEntryTemplates {
 					m_dynCustomStrings.AddItem(kvp.Key, Resources.Resources.B16x16_KGPG_Info, kvp.Value);
 			}
 		}
+
 		public override string UpdateUrl {
 			get {
 				return "http://mitchcapper.com/keepass_versions.txt?KPET";
 			}
 		}
+
 		public override void Terminate() {
 			ToolStripItemCollection tsMenu = m_host.MainWindow.EntryContextMenu.Items;
 			GlobalWindowManager.WindowAdded -= global_window_manager_window_added_handler;
