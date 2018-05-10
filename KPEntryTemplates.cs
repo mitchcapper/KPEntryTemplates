@@ -48,12 +48,50 @@ namespace KPEntryTemplates {
 			if (form == null)
 				return;
 			form.Shown += form_Shown;
+            form.Resize += form_Resize;
 		}
 
-		void form_Shown(object sender, EventArgs e) {
-			PwEntryForm form = sender as PwEntryForm;
-			new EntryTemplateManager(m_host, form);
-		}
+        void form_Shown(object sender, EventArgs e)
+        {
+            PwEntryForm form = sender as PwEntryForm;
+            new EntryTemplateManager(m_host, form);
+        }
+
+        void form_Resize(object sender, EventArgs e)
+        {
+            // on form resize, change edits and bottom button widths;
+            // also reposition right side buttons
+
+            PwEntryForm form = sender as PwEntryForm;
+
+            TabControl tabControl = null;
+            foreach (Control c in form.Controls) {
+                if (c is TabControl) {
+                    tabControl = c as TabControl;
+                    break;
+                }
+            }
+            if (tabControl == null) return;
+
+            TabPage tmplPage = tabControl.TabPages[0];
+            if (tmplPage.Text != "Template") return;
+
+            foreach (Control c in tmplPage.Controls) {
+                if (!(c is Label)) {
+                    if (c is CheckBox) {
+                        c.Left = tmplPage.Width - ((c.Width + 55) / 2);
+                    } else if (c is Button) {
+                        if ((c as Button).Text == "Remove As Template Child") {
+                            c.Width = tmplPage.Width - c.Left - 55;
+                        } else {
+                            c.Left = tmplPage.Width - ((c.Width + 55) / 2);
+                        }
+                    } else {
+                        c.Width = tmplPage.Width - c.Left - 55;
+                    }
+                }
+            }
+        }
 
 		void EntryTemplates_EntryCreating(object sender, TemplateEntryEventArgs e) {
 			EntryTemplateManager.InitChildEntry(e.TemplateEntry, e.Entry);
