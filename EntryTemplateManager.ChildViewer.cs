@@ -61,9 +61,9 @@ namespace KPEntryTemplates {
 		}
 		private void OnPwGenOpen(object sender, EventArgs e) {
 			PwGeneratorForm pgf = new PwGeneratorForm();
-            ProtectedString ps = new ProtectedString(true, current_password_field.ToUtf8());
+			ProtectedString ps = new ProtectedString(true, current_password_field.ToUtf8());
 			bool bAtLeastOneChar = (ps.Length > 0);
-            PwProfile opt = PwProfile.DeriveFromPassword(ps);
+			PwProfile opt = PwProfile.DeriveFromPassword(ps);
 
 			pgf.InitEx(bAtLeastOneChar ? opt : null, true, false);
 			if (pgf.ShowDialog() == DialogResult.OK) {
@@ -72,15 +72,15 @@ namespace KPEntryTemplates {
 				PwGenerator.Generate(out psNew, pgf.SelectedProfile, pbEntropy,
 					Program.PwGeneratorPool);
 
-                current_password_field.SetPassword(psNew.ReadUtf8());
-                current_password_confirm_field.SetPassword(psNew.ReadUtf8());
+				current_password_field.SetPassword(psNew.ReadUtf8());
+				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
 			}
 
 		}
 		private void OnProfilesDynamicMenuClick(object sender, DynamicMenuEventArgs e) {
 			PwProfile pwp = null;
 			if (e.ItemName == DeriveFromPrevious) {
-                pwp = PwProfile.DeriveFromPassword(new ProtectedString(true, current_password_field.ToUtf8()));
+				pwp = PwProfile.DeriveFromPassword(new ProtectedString(true, current_password_field.ToUtf8()));
 			}
 			else {
 				foreach (PwProfile pwgo in Program.Config.PasswordGenerator.UserProfiles) {
@@ -95,8 +95,8 @@ namespace KPEntryTemplates {
 				ProtectedString psNew;
 
 				PwGenerator.Generate(out psNew, pwp, null, m_host.PwGeneratorPool);
-                current_password_field.SetPassword(psNew.ReadUtf8());
-                current_password_confirm_field.SetPassword(psNew.ReadUtf8());
+				current_password_field.SetPassword(psNew.ReadUtf8());
+				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
 
 			}
 			else { Debug.Assert(false); }
@@ -119,9 +119,9 @@ namespace KPEntryTemplates {
 			m_dynGenProfiles.MenuClick += OnProfilesDynamicMenuClick;
 
 			m_ctxPwGen.Items.AddRange(new ToolStripItem[] {
-            m_ctxPwGenOpen,
-            m_ctxPwGenSep0,
-            m_ctxPwGenProfiles});
+			m_ctxPwGenOpen,
+			m_ctxPwGenSep0,
+			m_ctxPwGenProfiles});
 			m_ctxPwGen.Name = "m_ctxPwGen";
 			m_ctxPwGen.Size = new Size(209, 54);
 			// 
@@ -194,7 +194,7 @@ namespace KPEntryTemplates {
 			List<EntryTemplate> cur = parse_entry(par_template.Strings);
 			const int LABEL_WIDTH = 130;
 			const int LEFT_CONTROL_OFFSET = LABEL_WIDTH + 5;
-            int CONTROL_WIDTH = page.ClientSize.Width - LABEL_WIDTH - 55;
+			int CONTROL_WIDTH = page.ClientSize.Width - LABEL_WIDTH - 55;
 			foreach (EntryTemplate t in cur) {
 				Label label = new Label();
 				label.Text = t.title + ":";
@@ -348,7 +348,7 @@ namespace KPEntryTemplates {
 			ProtectedString psValue = form.EntryStrings.Get(t.fieldName);
 			Debug.Assert(psValue != null);
 			EditStringForm esf = new EditStringForm();
-            esf.InitEx(form.EntryStrings, t.fieldName, psValue, m_host.Database);
+			esf.InitEx(form.EntryStrings, t.fieldName, psValue, m_host.Database);
 			if (esf.ShowDialog() == DialogResult.OK)
 				form.UpdateEntryStrings(false, true);
 
@@ -377,7 +377,7 @@ namespace KPEntryTemplates {
 
 			new_override_url_control = get_control_from_form(form, "m_cmbOverrideUrl") as ImageComboBoxEx;
 			if (new_override_url_control == null)//older keepass
-		       override_url_control = get_control_from_form(form, "m_tbOverrideUrl") as TextBox;
+			   override_url_control = get_control_from_form(form, "m_tbOverrideUrl") as TextBox;
 		}
 		private int LinesFromOption(String val){
 			if (String.IsNullOrEmpty(val))
@@ -419,7 +419,7 @@ namespace KPEntryTemplates {
 				}
 				else if (t.type == "Protected Inline") {
 					SecureEdit sedit = et_to_secure_edit[t];
-                    str = new ProtectedString(true,sedit.ToUtf8());
+					str = new ProtectedString(true,sedit.ToUtf8());
 				}
 				else
 					continue;
@@ -501,7 +501,7 @@ namespace KPEntryTemplates {
 				}
 				else if (t.type == "Protected Inline") {
 					SecureEdit sedit = et_to_secure_edit[t];
-                    sedit.SetPassword(str.ReadUtf8());
+					sedit.SetPassword(str.ReadUtf8());
 				}
 				else if (t.type == "Listbox"){
 					ComboBox combobox = (ComboBox) pair.Value;

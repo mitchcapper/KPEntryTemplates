@@ -17,8 +17,7 @@ namespace KPEntryTemplates {
 		private System.ComponentModel.CancelEventHandler entry_context_menu_opening_handler;
 		private EventHandler<TemplateEntryEventArgs> entry_templates_entry_creating_handler;
 		private EventHandler<GwmWindowEventArgs> global_window_manager_window_added_handler;
-
-        public override bool Initialize(IPluginHost host) {
+		public override bool Initialize(IPluginHost host) {
 			Debug.Assert(host != null);
 			if (host == null) return false;
 			m_host = host;
