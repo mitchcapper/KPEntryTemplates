@@ -7,7 +7,6 @@ using KeePass.Plugins;
 using KeePass.UI;
 using KeePass.Util;
 using KeePassLib;
-
 namespace KPEntryTemplates {
 	public sealed class KPEntryTemplatesExt : Plugin {
 		private IPluginHost m_host;
@@ -125,7 +124,6 @@ namespace KPEntryTemplates {
 		private bool show_copy_menu() {
 			return m_host.MainWindow.GetSelectedEntriesCount() == 1 && EntryTemplateManager.is_template_child(m_host.MainWindow.GetSelectedEntry(false));
 		}
-
 		void EntryContextMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e) {
 			m_tsmi_set_template_parent.Enabled = m_host.MainWindow.GetSelectedEntriesCount() != 0;
 			m_tsmi_copy_template_string.Visible = show_copy_menu();
@@ -137,13 +135,11 @@ namespace KPEntryTemplates {
 					m_dynCustomStrings.AddItem(kvp.Key, Resources.Resources.B16x16_KGPG_Info, kvp.Value);
 			}
 		}
-
 		public override string UpdateUrl {
 			get {
 				return "http://mitchcapper.com/keepass_versions.txt?KPET";
 			}
 		}
-
 		public override void Terminate() {
 			ToolStripItemCollection tsMenu = m_host.MainWindow.EntryContextMenu.Items;
 			GlobalWindowManager.WindowAdded -= global_window_manager_window_added_handler;

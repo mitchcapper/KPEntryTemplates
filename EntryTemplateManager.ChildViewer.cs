@@ -12,7 +12,6 @@ using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Security;
-
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
 		Dictionary<EntryTemplate, Label> et_to_label;
