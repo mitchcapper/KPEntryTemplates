@@ -1,10 +1,10 @@
 KP Entry Templates for KeePass 2.x
 =================================
-Warning: KeePass 2.39 significantly changed the password control. Version 7.8 and higher are only compatible with keepass 2.39 and higher.
+## Warning: KeePass 2.39 significantly changed the password control. Version 7.8 and higher are only compatible with keepass 2.39 and higher.
 
 CHANGES
 -----
-- 7.8 KeePass 2.39> support, better password confirmation support, breaks keepass support < 2.39.
+- 7.8 KeePass 2.39> support, better password confirmation support, breaks keepass support < 2.39. Rich Textbox support.
 - 7.7 KeePassResize support thanks to @h-a-s-h
 - 7.6 ComboBox width fixed to full size (rather than smallest entry)
 - 7.5 Compatibility with KeePass 2.36 and better
@@ -38,7 +38,7 @@ and is the actual field name the field is stored under.    Finally, the
 of which are self explanatory.  A few may require some explanation:
 
 - "Inline" is a standard textbox
-
+- "Rich Textbox" is a rich textbox (URL highlighting and such like the normal notes box). In KeePass 2.39 enter keys do NOT insert a return (but can be manually copied into it). We are working to resolve this with KeePass. Until it is the notes field option will use the standard textbox.
 - "Popout" shows the standard custom field editing window
 
 - "Divider" is not a field at all, but rather can be used to section the 

@@ -41,6 +41,7 @@ namespace KPEntryTemplates {
 			page.Controls.Add(client_remove_button);
 			form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			form.AutoScaleMode = AutoScaleMode.Font;
+			
 		}
 		private SecureTextBoxEx current_password_field;
 		private SecureTextBoxEx current_password_confirm_field;
@@ -244,16 +245,31 @@ namespace KPEntryTemplates {
 					if (t.fieldName == "@exp_date")
 						picker.ShowCheckBox = true;
 					et_to_control[t] = picker;
+				} else if (t.type == "RichTextbox") {
+					var box = new CustomRichTextBoxEx();
+					box.Top = control_offset_y;
+					box.Left = LEFT_CONTROL_OFFSET;
+					box.Width = CONTROL_WIDTH;
+					int lines = LinesFromOption(t.options);
+					box.Multiline = lines > 1;
+					box.Height = 18 * lines + 10;
+					box.CtrlEnterAccepts = true;
+					box.ScrollBars = RichTextBoxScrollBars.Both;
+					control_offset_y += 18 * (lines - 1);
+					UIUtil.PrepareStandardMultilineControl(box, true, lines > 1);
+
+					et_to_control[t] = box;
 				} else if (t.type == "Inline" || t.type == "Protected Inline" || t.type == "Inline URL") {
 					var box = new TextBox();
+					int lines = LinesFromOption(t.options);
+					if (t.type == "Inline URL")
+						lines = 1;
 					if (t.type == "Protected Inline")
 						box = new SecureTextBoxEx();
 					box.Top = control_offset_y;
 					box.Left = LEFT_CONTROL_OFFSET;
 					box.Width = t.type == "Inline URL" ? CONTROL_WIDTH - 30 : CONTROL_WIDTH;
-					int lines = LinesFromOption(t.options);
-					if (t.type == "Inline URL")
-						lines = 1;
+
 					if (lines > 1) {
 						box.Multiline = true;
 						box.AcceptsReturn = true;
@@ -409,6 +425,9 @@ namespace KPEntryTemplates {
 				} else if (t.type == "Inline" || t.type == "Inline URL") {
 					TextBox box = (TextBox)pair.Value;
 					str = new ProtectedString(false, box.Text == null ? "" : box.Text.Replace("\r", ""));
+				} else if (t.type == "RichTextbox") {
+					var box = (CustomRichTextBoxEx)pair.Value;
+					str = new ProtectedString(false, box.Text == null ? "" : box.Text.Replace("\r", ""));
 				} else if (t.type == "Listbox") {
 					ComboBox combobox = (ComboBox)pair.Value;
 					str = new ProtectedString(false, combobox.SelectedItem == null ? "" : combobox.SelectedItem.ToString());
@@ -496,6 +515,12 @@ namespace KPEntryTemplates {
 				} else if (t.type == "Protected Inline") {
 					var sedit = et_to_secure_edit[t];
 					sedit.TextEx = str;
+				} else if (t.type == "RichTextbox") {
+					var box = (CustomRichTextBoxEx)pair.Value;
+					String val = str.ReadString();
+					val = val.Replace("\r", "");
+					val = val.Replace("\n", "\r\n");
+					box.Text = val;
 				} else if (t.type == "Listbox") {
 					ComboBox combobox = (ComboBox)pair.Value;
 					combobox.SelectedItem = str.ReadString();

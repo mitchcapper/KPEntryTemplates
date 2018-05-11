@@ -116,7 +116,8 @@ namespace KPEntryTemplates {
 			"Date Time",
 			"Checkbox",
 			"Divider",
-			"Listbox"
+			"Listbox",
+			"RichTextbox"
 			});
 			colType.DropDownWidth = 150;
             colOpt.HeaderText = "Opt";
@@ -157,6 +158,7 @@ namespace KPEntryTemplates {
 			String msg = "";
 			switch (type) {
 				case "Inline":
+				case "RichTextbox"://CustomRichTextBoxEx
 				case "Protected Inline":
 					msg = "How many lines to show for the textbox(1-100)?";
 					break;
@@ -209,6 +211,7 @@ namespace KPEntryTemplates {
 			switch (type) {
 				case "Inline":
 				case "Protected Inline":
+				case "RichTextbox":
 				case "Listbox":
 					opt_enabled = true;
 					break;
