@@ -1,8 +1,11 @@
 KP Entry Templates for KeePass 2.x
 =================================
+Warning: KeePass 2.39 significantly changed the password control. Version 7.8 and higher are only compatible with keepass 2.39 and higher.
 
 CHANGES
 -----
+- 7.8 KeePass 2.39> support, better password confirmation support, breaks keepass support < 2.39.
+- 7.7 KeePassResize support thanks to @h-a-s-h
 - 7.6 ComboBox width fixed to full size (rather than smallest entry)
 - 7.5 Compatibility with KeePass 2.36 and better
 - 7.3 Added inline url option that has a clickable link to open the url

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using KeePass.Forms;
 using KeePass.Plugins;
+using KeePass.Resources;
 using KeePass.UI;
 using KeePass.Util;
 using KeePassLib;
@@ -137,7 +138,7 @@ namespace KPEntryTemplates {
 		}
 		public override string UpdateUrl {
 			get {
-				return "http://mitchcapper.com/keepass_versions.txt?KPET";
+				return "http://mitchcapper.com/keepass_versions.txt?KPET&KPV=" + PwDefs.VersionString;
 			}
 		}
 		public override void Terminate() {

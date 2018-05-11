@@ -12,12 +12,14 @@ using KeePass.Util;
 using KeePassLib;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Security;
+using KeePassLib.Utility;
+
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
 		Dictionary<EntryTemplate, Label> et_to_label;
 		Dictionary<EntryTemplate, Control> et_to_control;
 		Dictionary<EntryTemplate, Control> et_to_control2;
-		Dictionary<EntryTemplate, SecureEdit> et_to_secure_edit;
+		Dictionary<EntryTemplate, SecureTextBoxEx> et_to_secure_edit;
 
 		private Button client_remove_button;
 		private Button m_btnGenPw;
@@ -40,8 +42,8 @@ namespace KPEntryTemplates {
 			form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			form.AutoScaleMode = AutoScaleMode.Font;
 		}
-		private SecureEdit current_password_field;
-		private SecureEdit current_password_confirm_field;
+		private SecureTextBoxEx current_password_field;
+		private SecureTextBoxEx current_password_confirm_field;
 		private TextBox current_password_confirm_field_txt;
 		private readonly string DeriveFromPrevious = "(" + KPRes.GenPwBasedOnPrevious + ")";
 		private void OnPwGenClick(object sender, EventArgs e) {
@@ -60,7 +62,7 @@ namespace KPEntryTemplates {
 		}
 		private void OnPwGenOpen(object sender, EventArgs e) {
 			PwGeneratorForm pgf = new PwGeneratorForm();
-			ProtectedString ps = new ProtectedString(true, current_password_field.ToUtf8());
+			ProtectedString ps = current_password_field.TextEx;
 			bool bAtLeastOneChar = (ps.Length > 0);
 			PwProfile opt = PwProfile.DeriveFromPassword(ps);
 
@@ -71,17 +73,15 @@ namespace KPEntryTemplates {
 				PwGenerator.Generate(out psNew, pgf.SelectedProfile, pbEntropy,
 					Program.PwGeneratorPool);
 
-				current_password_field.SetPassword(psNew.ReadUtf8());
-				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
+				current_password_confirm_field.TextEx = current_password_field.TextEx = psNew;
 			}
 
 		}
 		private void OnProfilesDynamicMenuClick(object sender, DynamicMenuEventArgs e) {
 			PwProfile pwp = null;
 			if (e.ItemName == DeriveFromPrevious) {
-				pwp = PwProfile.DeriveFromPassword(new ProtectedString(true, current_password_field.ToUtf8()));
-			}
-			else {
+				pwp = PwProfile.DeriveFromPassword(current_password_field.TextEx);
+			} else {
 				foreach (PwProfile pwgo in Program.Config.PasswordGenerator.UserProfiles) {
 					if (pwgo.Name == e.ItemName) {
 						pwp = pwgo;
@@ -94,11 +94,8 @@ namespace KPEntryTemplates {
 				ProtectedString psNew;
 
 				PwGenerator.Generate(out psNew, pwp, null, m_host.PwGeneratorPool);
-				current_password_field.SetPassword(psNew.ReadUtf8());
-				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
-
-			}
-			else { Debug.Assert(false); }
+				current_password_confirm_field.TextEx = current_password_field.TextEx = psNew;
+			} else { Debug.Assert(false); }
 		}
 		private void init_pwgen_button() {
 			m_ctxPwGenOpen = new ToolStripMenuItem();
@@ -178,10 +175,10 @@ namespace KPEntryTemplates {
 			init_pwgen_button();
 			et_to_label = new Dictionary<EntryTemplate, Label>();
 			et_to_control = new Dictionary<EntryTemplate, Control>();
-			et_to_secure_edit = new Dictionary<EntryTemplate, SecureEdit>();
+			et_to_secure_edit = new Dictionary<EntryTemplate, SecureTextBoxEx>();
 			et_to_control2 = new Dictionary<EntryTemplate, Control>();
-			SecureEdit entry_pass = null;
-			SecureEdit entry_pass_confirm = null;
+			SecureTextBoxEx entry_pass = null;
+			SecureTextBoxEx entry_pass_confirm = null;
 
 			int control_offset_y = 10;
 			PwUuid par_uuid = new PwUuid(KeePassLib.Utility.MemUtil.HexStringToByteArray(uuid));
@@ -193,7 +190,8 @@ namespace KPEntryTemplates {
 			List<EntryTemplate> cur = parse_entry(par_template.Strings);
 			const int LABEL_WIDTH = 130;
 			const int LEFT_CONTROL_OFFSET = LABEL_WIDTH + 5;
-			int CONTROL_WIDTH = page.ClientSize.Width - LABEL_WIDTH - 55;
+			int CONTROL_WIDTH = (int)(page.ClientSize.Width / DpiUtil.FactorX) - LABEL_WIDTH - 95;
+
 			foreach (EntryTemplate t in cur) {
 				Label label = new Label();
 				label.Text = t.title + ":";
@@ -214,26 +212,23 @@ namespace KPEntryTemplates {
 					label.Width = CONTROL_WIDTH + LABEL_WIDTH;
 					label.Text = t.title;//remove :
 					et_to_control[t] = null;
-				}
-				else if (t.type == "Checkbox") {
+				} else if (t.type == "Checkbox") {
 					CheckBox checkbox = new CheckBox();
 					checkbox.Top = control_offset_y;
 					checkbox.Left = LEFT_CONTROL_OFFSET;
 					et_to_control[t] = checkbox;
-				}
-				else if (t.type == "Listbox"){
+				} else if (t.type == "Listbox") {
 					ComboBox combobox = new ComboBox();
 					combobox.Top = control_offset_y;
 					combobox.Left = LEFT_CONTROL_OFFSET;
 					combobox.Width = CONTROL_WIDTH;
 					et_to_control[t] = combobox;
-					if (!String.IsNullOrEmpty(t.options)){
-						String[] opts = t.options.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
+					if (!String.IsNullOrEmpty(t.options)) {
+						String[] opts = t.options.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 						foreach (String opt in opts)
 							combobox.Items.Add(opt.Trim());
 					}
-				}
-				else if (t.type == "Date" || t.type == "Time" || t.type == "Date Time") {
+				} else if (t.type == "Date" || t.type == "Time" || t.type == "Date Time") {
 					DateTimePicker picker = new DateTimePicker();
 					picker.Top = control_offset_y;
 					picker.Left = LEFT_CONTROL_OFFSET;
@@ -249,12 +244,13 @@ namespace KPEntryTemplates {
 					if (t.fieldName == "@exp_date")
 						picker.ShowCheckBox = true;
 					et_to_control[t] = picker;
-				}
-				else if (t.type == "Inline" || t.type == "Protected Inline" || t.type == "Inline URL") {
-					TextBox box = new TextBox();
+				} else if (t.type == "Inline" || t.type == "Protected Inline" || t.type == "Inline URL") {
+					var box = new TextBox();
+					if (t.type == "Protected Inline")
+						box = new SecureTextBoxEx();
 					box.Top = control_offset_y;
 					box.Left = LEFT_CONTROL_OFFSET;
-					box.Width = t.type == "Inline URL" ? CONTROL_WIDTH-30 : CONTROL_WIDTH;
+					box.Width = t.type == "Inline URL" ? CONTROL_WIDTH - 30 : CONTROL_WIDTH;
 					int lines = LinesFromOption(t.options);
 					if (t.type == "Inline URL")
 						lines = 1;
@@ -263,13 +259,11 @@ namespace KPEntryTemplates {
 						box.AcceptsReturn = true;
 						box.Height = 13 * lines + 10;
 						box.ScrollBars = ScrollBars.Both;
-						control_offset_y += 13 * (lines-1);
+						control_offset_y += 13 * (lines - 1);
 					}
 					et_to_control[t] = box;
 					if (t.type == "Protected Inline") {
-						SecureEdit sedit = new SecureEdit();
-						sedit.Attach(box, null, true);
-						et_to_secure_edit[t] = sedit;
+						et_to_secure_edit[t] = box as SecureTextBoxEx;
 						if (t.fieldName != "@confirm") {
 							CheckBox chk = new CheckBox();
 							chk.Appearance = Appearance.Button;
@@ -282,27 +276,25 @@ namespace KPEntryTemplates {
 							chk.Checked = true;
 							chk.CheckedChanged += chk_CheckedChanged;
 							et_to_control2[t] = chk;
-						}
-						else {
+						} else {
 							et_to_control2[t] = m_btnGenPw;
 							et_to_control2[t].Location = new Point(box.Left + box.Width + 10, control_offset_y);
-							current_password_confirm_field = sedit;
+							current_password_confirm_field = box as SecureTextBoxEx;
 							current_password_confirm_field_txt = box;
-							entry_pass_confirm = sedit;
+							entry_pass_confirm = box as SecureTextBoxEx;
 						}
 						if (t.fieldName == PwDefs.PasswordField) {
-							entry_pass = current_password_field = sedit;
+							entry_pass = current_password_field = box as SecureTextBoxEx;
 						}
-					}else if (t.type == "Inline URL") {
-						var link= new LinkLabel {Text = "Open"};
-						link.LinkClicked += (sender, args) => WinUtil.OpenUrl(box.Text??"", form.EntryRef);
+					} else if (t.type == "Inline URL") {
+						var link = new LinkLabel { Text = "Open" };
+						link.LinkClicked += (sender, args) => WinUtil.OpenUrl(box.Text ?? "", form.EntryRef);
 						link.Location = new Point(box.Left + box.Width + 10, control_offset_y);
 						link.Width = 50;
 						et_to_control2[t] = link;
 					}
 
-				}
-				else if (t.type == "Popout" || t.type == "Protected Popout") {
+				} else if (t.type == "Popout" || t.type == "Protected Popout") {
 					Button btn = new Button();
 					btn.Text = "View/Edit";
 					if (t.type == "Protected Popout")
@@ -325,7 +317,7 @@ namespace KPEntryTemplates {
 			//client_remove_button.Height = 20;
 			client_remove_button.Top = control_offset_y;
 			client_remove_button.Click += client_remove_button_Click;
-			if (entry_pass_confirm != null && entry_pass != null){
+			if (entry_pass_confirm != null && entry_pass != null) {
 			}
 			add_child_items_to_tab(page);
 			return true;
@@ -356,7 +348,15 @@ namespace KPEntryTemplates {
 		void chk_CheckedChanged(object sender, EventArgs e) {
 			CheckBox chk = (CheckBox)sender;
 			EntryTemplate t = (EntryTemplate)chk.Tag;
-			et_to_secure_edit[t].EnableProtection(chk.Checked);
+			var sedit = et_to_secure_edit[t];
+			sedit.EnableProtection(chk.Checked);
+			if (sedit == current_password_field && current_password_confirm_field != null) {
+				if (chk.Checked)
+					current_password_confirm_field.TextEx = sedit.TextEx;
+				current_password_confirm_field.Enabled = chk.Checked;
+				current_password_confirm_field.EnableProtection(chk.Checked);
+
+			}
 		}
 		private DateTimePicker expires_control;
 		private CheckBox expires_cbx_control;
@@ -376,12 +376,12 @@ namespace KPEntryTemplates {
 
 			new_override_url_control = get_control_from_form(form, "m_cmbOverrideUrl") as ImageComboBoxEx;
 			if (new_override_url_control == null)//older keepass
-			   override_url_control = get_control_from_form(form, "m_tbOverrideUrl") as TextBox;
+				override_url_control = get_control_from_form(form, "m_tbOverrideUrl") as TextBox;
 		}
-		private int LinesFromOption(String val){
+		private int LinesFromOption(String val) {
 			if (String.IsNullOrEmpty(val))
 				return 1;
-			int ret=1;
+			int ret = 1;
 			Int32.TryParse(val, out ret);
 			if (ret < 1 || ret > 100)
 				ret = 1;
@@ -403,24 +403,19 @@ namespace KPEntryTemplates {
 						continue;
 					}
 					str = new ProtectedString(false, picker.Value.ToString());
-				}
-				else if (t.type == "Checkbox") {
+				} else if (t.type == "Checkbox") {
 					CheckBox checkbox = (CheckBox)pair.Value;
 					str = new ProtectedString(false, checkbox.Checked.ToString());
-				}
-				else if (t.type == "Inline" || t.type == "Inline URL") {
+				} else if (t.type == "Inline" || t.type == "Inline URL") {
 					TextBox box = (TextBox)pair.Value;
 					str = new ProtectedString(false, box.Text == null ? "" : box.Text.Replace("\r", ""));
-				}
-				else if (t.type == "Listbox"){
-					ComboBox combobox = (ComboBox) pair.Value;
+				} else if (t.type == "Listbox") {
+					ComboBox combobox = (ComboBox)pair.Value;
 					str = new ProtectedString(false, combobox.SelectedItem == null ? "" : combobox.SelectedItem.ToString());
-				}
-				else if (t.type == "Protected Inline") {
-					SecureEdit sedit = et_to_secure_edit[t];
-					str = new ProtectedString(true,sedit.ToUtf8());
-				}
-				else
+				} else if (t.type == "Protected Inline") {
+					var sedit = et_to_secure_edit[t];
+					str = sedit.TextEx;
+				} else
 					continue;
 				str = str.WithProtection(t.type.StartsWith("Protected"));
 				if (t.fieldName == "@confirm") {
@@ -455,13 +450,14 @@ namespace KPEntryTemplates {
 		private bool check_confirm_password_ok() {
 			if (current_password_field == null || current_password_confirm_field == null)
 				return true;
-			if (current_password_field.ContentsEqualTo(current_password_confirm_field) == false) {
+			if (!current_password_confirm_field.Enabled)
+				current_password_confirm_field.TextEx = current_password_field.TextEx;
+			if (current_password_field.TextEx.Equals(current_password_confirm_field.TextEx, false) == false) {
 				init_validation_err();
 				current_password_confirm_field_txt.BackColor = KeePass.App.AppDefs.ColorEditError;
 				m_ttValidationError.Show(KPRes.PasswordRepeatFailed, current_password_confirm_field_txt);
 				return false;
-			}
-			else if (m_ttValidationError != null)
+			} else if (m_ttValidationError != null)
 				m_ttValidationError.Hide(current_password_confirm_field_txt);
 			current_password_confirm_field_txt.BackColor = Color.White;
 
@@ -497,31 +493,26 @@ namespace KPEntryTemplates {
 					val = val.Replace("\n", "\r\n");
 					box.Text = val;
 
-				}
-				else if (t.type == "Protected Inline") {
-					SecureEdit sedit = et_to_secure_edit[t];
-					sedit.SetPassword(str.ReadUtf8());
-				}
-				else if (t.type == "Listbox"){
-					ComboBox combobox = (ComboBox) pair.Value;
+				} else if (t.type == "Protected Inline") {
+					var sedit = et_to_secure_edit[t];
+					sedit.TextEx = str;
+				} else if (t.type == "Listbox") {
+					ComboBox combobox = (ComboBox)pair.Value;
 					combobox.SelectedItem = str.ReadString();
-				}
-				else if (t.type == "Checkbox") {
+				} else if (t.type == "Checkbox") {
 					bool val;
 					CheckBox box = (CheckBox)pair.Value;
 					box.Checked = false;
 					if (Boolean.TryParse(str.ReadString(), out val))
 						box.Checked = val;
-				}
-				else if (t.type == "Date" || t.type == "Time" || t.type == "Date Time") {
+				} else if (t.type == "Date" || t.type == "Time" || t.type == "Date Time") {
 					DateTimePicker picker = (DateTimePicker)pair.Value;
 					if (t.fieldName == "@exp_date") {
 						find_expires_control(form);
 						Debug.Assert(expires_control != null && expires_cbx_control != null);
 						picker.Value = expires_control.Value;
 						picker.Checked = expires_cbx_control.Checked;
-					}
-					else {
+					} else {
 						DateTime val;
 						if (DateTime.TryParse(str.ReadString(), out val))
 							picker.Value = val;
