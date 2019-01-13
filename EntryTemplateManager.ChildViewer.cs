@@ -17,7 +17,6 @@ namespace KPEntryTemplates {
 		Dictionary<EntryTemplate, Label> et_to_label;
 		Dictionary<EntryTemplate, Control> et_to_control;
 		Dictionary<EntryTemplate, Control> et_to_control2;
-		Dictionary<EntryTemplate, SecureEdit> et_to_secure_edit;
 
 		private Button client_remove_button;
 		private Button m_btnGenPw;
@@ -40,8 +39,8 @@ namespace KPEntryTemplates {
 			form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			form.AutoScaleMode = AutoScaleMode.Font;
 		}
-		private SecureEdit current_password_field;
-		private SecureEdit current_password_confirm_field;
+		private SecureTextBoxEx current_password_field;
+		private SecureTextBoxEx current_password_confirm_field;
 		private TextBox current_password_confirm_field_txt;
 		private readonly string DeriveFromPrevious = "(" + KPRes.GenPwBasedOnPrevious + ")";
 		private void OnPwGenClick(object sender, EventArgs e) {
@@ -60,7 +59,7 @@ namespace KPEntryTemplates {
 		}
 		private void OnPwGenOpen(object sender, EventArgs e) {
 			PwGeneratorForm pgf = new PwGeneratorForm();
-			ProtectedString ps = new ProtectedString(true, current_password_field.ToUtf8());
+			ProtectedString ps = current_password_field.TextEx;
 			bool bAtLeastOneChar = (ps.Length > 0);
 			PwProfile opt = PwProfile.DeriveFromPassword(ps);
 
@@ -71,15 +70,15 @@ namespace KPEntryTemplates {
 				PwGenerator.Generate(out psNew, pgf.SelectedProfile, pbEntropy,
 					Program.PwGeneratorPool);
 
-				current_password_field.SetPassword(psNew.ReadUtf8());
-				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
+                current_password_field.TextEx = psNew;
+                current_password_confirm_field.TextEx = psNew;;
 			}
 
 		}
 		private void OnProfilesDynamicMenuClick(object sender, DynamicMenuEventArgs e) {
 			PwProfile pwp = null;
 			if (e.ItemName == DeriveFromPrevious) {
-				pwp = PwProfile.DeriveFromPassword(new ProtectedString(true, current_password_field.ToUtf8()));
+				pwp = PwProfile.DeriveFromPassword(current_password_field.TextEx);
 			}
 			else {
 				foreach (PwProfile pwgo in Program.Config.PasswordGenerator.UserProfiles) {
@@ -94,8 +93,8 @@ namespace KPEntryTemplates {
 				ProtectedString psNew;
 
 				PwGenerator.Generate(out psNew, pwp, null, m_host.PwGeneratorPool);
-				current_password_field.SetPassword(psNew.ReadUtf8());
-				current_password_confirm_field.SetPassword(psNew.ReadUtf8());
+				current_password_field.TextEx = psNew;
+				current_password_confirm_field.TextEx = psNew;
 
 			}
 			else { Debug.Assert(false); }
@@ -178,10 +177,9 @@ namespace KPEntryTemplates {
 			init_pwgen_button();
 			et_to_label = new Dictionary<EntryTemplate, Label>();
 			et_to_control = new Dictionary<EntryTemplate, Control>();
-			et_to_secure_edit = new Dictionary<EntryTemplate, SecureEdit>();
 			et_to_control2 = new Dictionary<EntryTemplate, Control>();
-			SecureEdit entry_pass = null;
-			SecureEdit entry_pass_confirm = null;
+			SecureTextBoxEx entry_pass = null;
+			SecureTextBoxEx entry_pass_confirm = null;
 
 			int control_offset_y = 10;
 			PwUuid par_uuid = new PwUuid(KeePassLib.Utility.MemUtil.HexStringToByteArray(uuid));
@@ -250,7 +248,50 @@ namespace KPEntryTemplates {
 						picker.ShowCheckBox = true;
 					et_to_control[t] = picker;
 				}
-				else if (t.type == "Inline" || t.type == "Protected Inline" || t.type == "Inline URL") {
+                else if (t.type == "Protected Inline") {
+                    SecureTextBoxEx sedit = new SecureTextBoxEx();
+                    sedit.Top = control_offset_y;
+                    sedit.Left = LEFT_CONTROL_OFFSET;
+                    sedit.Width = CONTROL_WIDTH;
+                    int lines = LinesFromOption(t.options);
+                    if (lines > 1)
+                    {
+                        sedit.Multiline = true;
+                        sedit.AcceptsReturn = true;
+                        sedit.Height = 13 * lines + 10;
+                        sedit.ScrollBars = ScrollBars.Both;
+                        control_offset_y += 13 * (lines - 1);
+                    }
+                    et_to_control[t] = sedit;
+
+                    if (t.fieldName != "@confirm")
+                    {
+                        CheckBox chk = new CheckBox();
+                        chk.Appearance = Appearance.Button;
+                        chk.Image = Resources.Resources.B17x05_3BlackDots;
+                        chk.Location = new Point(sedit.Left + sedit.Width + 10, control_offset_y);
+                        chk.Size = new Size(32, 23);
+                        chk.TextAlign = ContentAlignment.MiddleCenter;
+                        chk.UseVisualStyleBackColor = true;
+                        chk.Tag = t;
+                        chk.Checked = true;
+                        chk.CheckedChanged += chk_CheckedChanged;
+                        et_to_control2[t] = chk;
+                    }
+                    else
+                    {
+                        et_to_control2[t] = m_btnGenPw;
+                        et_to_control2[t].Location = new Point(sedit.Left + sedit.Width + 10, control_offset_y);
+                        current_password_confirm_field = sedit;
+                        current_password_confirm_field_txt = sedit;
+                        entry_pass_confirm = sedit;
+                    }
+                    if (t.fieldName == PwDefs.PasswordField)
+                    {
+                        entry_pass = current_password_field = sedit;
+                    }
+                }
+				else if (t.type == "Inline" || t.type == "Inline URL") {
 					TextBox box = new TextBox();
 					box.Top = control_offset_y;
 					box.Left = LEFT_CONTROL_OFFSET;
@@ -266,34 +307,7 @@ namespace KPEntryTemplates {
 						control_offset_y += 13 * (lines-1);
 					}
 					et_to_control[t] = box;
-					if (t.type == "Protected Inline") {
-						SecureEdit sedit = new SecureEdit();
-						sedit.Attach(box, null, true);
-						et_to_secure_edit[t] = sedit;
-						if (t.fieldName != "@confirm") {
-							CheckBox chk = new CheckBox();
-							chk.Appearance = Appearance.Button;
-							chk.Image = Resources.Resources.B17x05_3BlackDots;
-							chk.Location = new Point(box.Left + box.Width + 10, control_offset_y);
-							chk.Size = new Size(32, 23);
-							chk.TextAlign = ContentAlignment.MiddleCenter;
-							chk.UseVisualStyleBackColor = true;
-							chk.Tag = t;
-							chk.Checked = true;
-							chk.CheckedChanged += chk_CheckedChanged;
-							et_to_control2[t] = chk;
-						}
-						else {
-							et_to_control2[t] = m_btnGenPw;
-							et_to_control2[t].Location = new Point(box.Left + box.Width + 10, control_offset_y);
-							current_password_confirm_field = sedit;
-							current_password_confirm_field_txt = box;
-							entry_pass_confirm = sedit;
-						}
-						if (t.fieldName == PwDefs.PasswordField) {
-							entry_pass = current_password_field = sedit;
-						}
-					}else if (t.type == "Inline URL") {
+					if (t.type == "Inline URL") {
 						var link= new LinkLabel {Text = "Open"};
 						link.LinkClicked += (sender, args) => WinUtil.OpenUrl(box.Text??"", form.EntryRef);
 						link.Location = new Point(box.Left + box.Width + 10, control_offset_y);
@@ -356,8 +370,8 @@ namespace KPEntryTemplates {
 		void chk_CheckedChanged(object sender, EventArgs e) {
 			CheckBox chk = (CheckBox)sender;
 			EntryTemplate t = (EntryTemplate)chk.Tag;
-			et_to_secure_edit[t].EnableProtection(chk.Checked);
-		}
+            ((SecureTextBoxEx)et_to_control[t]).EnableProtection(chk.Checked);
+        }
 		private DateTimePicker expires_control;
 		private CheckBox expires_cbx_control;
 
@@ -417,8 +431,8 @@ namespace KPEntryTemplates {
 					str = new ProtectedString(false, combobox.SelectedItem == null ? "" : combobox.SelectedItem.ToString());
 				}
 				else if (t.type == "Protected Inline") {
-					SecureEdit sedit = et_to_secure_edit[t];
-					str = new ProtectedString(true,sedit.ToUtf8());
+					SecureTextBoxEx sedit = (SecureTextBoxEx)et_to_control[t];
+					str = sedit.TextEx;
 				}
 				else
 					continue;
@@ -455,8 +469,8 @@ namespace KPEntryTemplates {
 		private bool check_confirm_password_ok() {
 			if (current_password_field == null || current_password_confirm_field == null)
 				return true;
-			if (current_password_field.ContentsEqualTo(current_password_confirm_field) == false) {
-				init_validation_err();
+            if (current_password_field.TextEx.Equals(current_password_confirm_field.TextEx, false)) { 
+                init_validation_err();
 				current_password_confirm_field_txt.BackColor = KeePass.App.AppDefs.ColorEditError;
 				m_ttValidationError.Show(KPRes.PasswordRepeatFailed, current_password_confirm_field_txt);
 				return false;
@@ -499,8 +513,8 @@ namespace KPEntryTemplates {
 
 				}
 				else if (t.type == "Protected Inline") {
-					SecureEdit sedit = et_to_secure_edit[t];
-					sedit.SetPassword(str.ReadUtf8());
+					SecureTextBoxEx sedit = (SecureTextBoxEx)et_to_control[t];
+                    sedit.TextEx = str;
 				}
 				else if (t.type == "Listbox"){
 					ComboBox combobox = (ComboBox) pair.Value;
