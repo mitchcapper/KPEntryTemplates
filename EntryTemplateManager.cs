@@ -42,7 +42,7 @@ namespace KPEntryTemplates {
 			form.EntrySaving += form_EntrySaving;
 			our_page.UseVisualStyleBackColor = true;
 			form_tab_control.TabPages.Insert(0, our_page);
-			if (entry_is_child || entry_is_template)
+			if (entry_is_child || entry_is_template && !KeePassLib.Native.NativeLib.IsUnix())
 				form_tab_control.SelectTab(0);
 		}
 
