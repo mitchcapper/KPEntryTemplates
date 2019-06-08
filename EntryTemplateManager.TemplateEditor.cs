@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using KeePass.UI;
 using KeePassLib;
 
 namespace KPEntryTemplates {
@@ -23,6 +24,7 @@ namespace KPEntryTemplates {
 				return;
 			}
 
+			page.HorizontalScroll.Enabled = false;
 			page.SuspendLayout();
 			dataGridView = new DataGridView();
 			colTitle = new DataGridViewTextBoxColumn();
@@ -44,15 +46,18 @@ namespace KPEntryTemplates {
 			dataGridView.DefaultValuesNeeded += dataGridView_DefaultValuesNeeded;
 			dataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			dataGridView.Columns.AddRange(new DataGridViewColumn[] {
-            colTitle,
+			colTitle,
 			colField,
-            colFieldName,
-            colType,
+			colFieldName,
+			colType,
 			colOpt,colOptionValue});
 			dataGridView.Location = new Point(0, 0);
 			dataGridView.Name = "dataGridView";
-			dataGridView.Size = new System.Drawing.Size(TAB_WIDTH, TAB_HEIGHT);
-            dataGridView.TabIndex = 0;
+			dataGridView.TabIndex = 0;
+			SetBaseSizes(page);
+			var template = new EntryTemplate(null, null, "DataGridView", 0, null);//used just for the conrol sizing
+			SetControlSizing(template, dataGridView);
+			dataGridView.ScrollBars = ScrollBars.None;
 			dataGridView.DragDrop += dataGridView_DragDrop;
 			dataGridView.DragOver += dataGridView_DragOver;
 			dataGridView.MouseDown += dataGridView_MouseDown;
@@ -77,17 +82,17 @@ namespace KPEntryTemplates {
 			// 
 			colField.HeaderText = "Field";
 			colField.Items.AddRange(new object[] {
-            "Custom",
-            "Title",
-            "Username",
-            "Password",
+			"Custom",
+			"Title",
+			"Username",
+			"Password",
 			"Password Confirmation",
 			"URL",
 			"Notes",
 			"Override URL",
 			"Expiry Date"});
 			colField.Name = "colField";
-			colField.Width = 105;
+			colField.Width = DpiUtil.ScaleIntX(105);
 			colField.DropDownWidth = 180;
 
 
@@ -98,30 +103,31 @@ namespace KPEntryTemplates {
 			colFieldName.HeaderText = "Field Name";
 			colFieldName.Name = "colFieldName";
 			colFieldName.SortMode = DataGridViewColumnSortMode.NotSortable;
-			colFieldName.Width = 75;
+			colFieldName.Width = DpiUtil.ScaleIntX(75);
 			// 
 			// colType
 			// 
 			colType.HeaderText = "Type";
 			colType.Name = "colType";
-			colType.Width = 100;
+			colType.Width = DpiUtil.ScaleIntX(100);
 			colType.Items.AddRange(new object[] {
-            "Inline",
+			"Inline",
 			"Inline URL",
-            "Popout",
-            "Protected Inline",
-            "Protected Popout",
+			"Popout",
+			"Protected Inline",
+			"Protected Popout",
 			"Date",
 			"Time",
 			"Date Time",
 			"Checkbox",
 			"Divider",
-			"Listbox"
+			"Listbox",
+			"RichTextbox"
 			});
 			colType.DropDownWidth = 150;
-            colOpt.HeaderText = "Opt";
+			colOpt.HeaderText = "Npt";
 			colOpt.Name = "colOpt";
-			colOpt.Width = 40;
+			colOpt.Width = DpiUtil.ScaleIntX(40);
 			colOpt.UseColumnTextForButtonValue = true;
 			colOpt.Text = "Opt";
 			colOpt.ToolTipText = "Option";
@@ -129,25 +135,27 @@ namespace KPEntryTemplates {
 			colOptionValue.Visible = false;
 			colOptionValue.Name = "colOptionValue";
 			colOptionValue.Width = 0;
-			
-			
+
+
 			page.Controls.Add(dataGridView);
 			remove_as_template_button = new Button();
 			remove_as_template_button.Text = "Remove As Template";
-			remove_as_template_button.Width = TAB_WIDTH - 140 - 45;
-			remove_as_template_button.Left = 115;
+			remove_as_template_button.Height = BUTTON_HEIGHT;
+			remove_as_template_button.Width = PAGE_WIDTH - DpiUtil.ScaleIntX(140) - DpiUtil.ScaleIntX(45);
+			remove_as_template_button.Left = DpiUtil.ScaleIntX(85);
 			//remove_as_template_button.Height = 28;
 			remove_as_template_button.UseVisualStyleBackColor = true;
-			dataGridView.Size = new Size(TAB_WIDTH, TAB_HEIGHT - remove_as_template_button.Height - 10); //have to set its size before setting the buttons size
-			remove_as_template_button.Top = dataGridView.Height + 5;
+
+			dataGridView.Tag = template;
+
+			remove_as_template_button.Tag = template;
 			remove_as_template_button.Click += remove_as_template_button_Click;
+			SetControlSizing(template, remove_as_template_button);
 			page.Controls.Add(remove_as_template_button);
-			form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			form.AutoScaleMode = AutoScaleMode.Font;
 			page.ResumeLayout();
-			
+
 		}
-		private void dataGridView_CellClick(object sender, DataGridViewCellEventArgs e){
+		private void dataGridView_CellClick(object sender, DataGridViewCellEventArgs e) {
 			if (e.ColumnIndex != dataGridView.Columns["colOpt"].Index)
 				return;
 			DataGridViewRow row = dataGridView.Rows[e.RowIndex];
@@ -157,6 +165,7 @@ namespace KPEntryTemplates {
 			String msg = "";
 			switch (type) {
 				case "Inline":
+				case "RichTextbox"://CustomRichTextBoxEx
 				case "Protected Inline":
 					msg = "How many lines to show for the textbox(1-100)?";
 					break;
@@ -164,7 +173,7 @@ namespace KPEntryTemplates {
 					msg = "Listbox Items, seperate with each with a comma";
 					break;
 			}
-			String ret = OptionsForm.GetOption(msg, (string) row.Cells["colOptionValue"].Value);
+			String ret = OptionsForm.GetOption(msg, (string)row.Cells["colOptionValue"].Value);
 			if (ret != null)
 				row.Cells["colOptionValue"].Value = ret;
 		}
@@ -190,7 +199,7 @@ namespace KPEntryTemplates {
 			else if (cell.OwningColumn.Name == "colType") {
 				box.SelectedIndexChanged += col_type_box_SelectedIndexChanged;
 			}
-			if (box != null){
+			if (box != null) {
 				box.DropDown += box_DropDown;
 				box.SelectedIndexChanged += box_SelectedIndexChanged;
 			}
@@ -204,11 +213,12 @@ namespace KPEntryTemplates {
 		void box_DropDown(object sender, EventArgs e) {
 			((DataGridViewComboBoxEditingControl)sender).BackColor = Color.White;
 		}
-		private void SetRowOptionEnabled(DataGridViewRow row, String type){
+		private void SetRowOptionEnabled(DataGridViewRow row, String type) {
 			bool opt_enabled = false;
 			switch (type) {
 				case "Inline":
 				case "Protected Inline":
+				case "RichTextbox":
 				case "Listbox":
 					opt_enabled = true;
 					break;
@@ -216,7 +226,7 @@ namespace KPEntryTemplates {
 
 			(row.Cells["colOpt"] as DataGridViewDisableButtonCell).Enabled = opt_enabled;
 		}
-		private void col_type_box_SelectedIndexChanged(object sender, EventArgs e){
+		private void col_type_box_SelectedIndexChanged(object sender, EventArgs e) {
 			DataGridViewCell cell = dataGridView.CurrentCell;
 			String type = cell.EditedFormattedValue.ToString();
 			SetRowOptionEnabled(cell.OwningRow, type);
@@ -260,7 +270,7 @@ namespace KPEntryTemplates {
 					break;
 				case "Notes":
 					fieldName = PwDefs.NotesField;
-					type = conf.ProtectNotes ? "Protected Inline" : "Inline";
+					type = conf.ProtectNotes ? "Protected Inline" : "RichTextbox";
 					break;
 				default:
 					type = "";
@@ -274,13 +284,13 @@ namespace KPEntryTemplates {
 				return;
 			}
 			row.Cells["colType"].ReadOnly = row.Cells["colFieldName"].ReadOnly = read_only;
-			if (type != ""){
+			if (type != "") {
 				row.Cells["colType"].Value = type;
 				SetRowOptionEnabled(row, type);
 			}
 			if (fieldName != "")
 				row.Cells["colFieldName"].Value = fieldName;
-			
+
 
 		}
 
@@ -293,7 +303,7 @@ namespace KPEntryTemplates {
 			to_del = null;
 
 		}
-		private void RemoveToDel(){
+		private void RemoveToDel() {
 			if (to_del != null) {
 				if (dataGridView.Rows.Contains(to_del))
 					dataGridView.Rows.Remove(to_del);
@@ -369,8 +379,7 @@ namespace KPEntryTemplates {
 			if (res != DialogResult.Retry) {
 				dataGridView.CancelEdit();
 				to_del = row;
-			}
-			else {
+			} else {
 				e.Cancel = true;
 				row.ErrorText = old_row_err;
 			}
@@ -448,8 +457,7 @@ namespace KPEntryTemplates {
 					row.Cells["colOptionValue"].Value = t.options;
 				}
 
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				MessageBox.Show(e.Message);
 			}
 		}
@@ -481,8 +489,7 @@ namespace KPEntryTemplates {
 				Size dragSize = SystemInformation.DragSize;
 				dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)),
 				dragSize);
-			}
-			else
+			} else
 				dragBoxFromMouseDown = Rectangle.Empty;
 		}
 

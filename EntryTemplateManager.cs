@@ -10,11 +10,10 @@ using KeePassLib.Security;
 using KeePassLib.Utility;
 using KeePass.UI;
 using KeePass.Resources;
+using System.Threading.Tasks;
 
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
-		private const int TAB_WIDTH = 465;
-		private const int TAB_HEIGHT = 350;
 
 		private PwEntryForm form;
 		private IPluginHost m_host;
@@ -43,7 +42,7 @@ namespace KPEntryTemplates {
 			form.EntrySaving += form_EntrySaving;
 			our_page.UseVisualStyleBackColor = true;
 			form_tab_control.TabPages.Insert(0, our_page);
-			if (entry_is_child || entry_is_template)
+			if (entry_is_child || entry_is_template && !KeePassLib.Native.NativeLib.IsUnix())
 				form_tab_control.SelectTab(0);
 		}
 
@@ -102,8 +101,7 @@ namespace KPEntryTemplates {
 					entry_is_child = false;
 					buttons_show();
 					return;
-				}					
-
+				}
 			init_child_vals();
 		}
 		public static bool entry_is_in_template_group(IPluginHost m_host, PwGroup group) {

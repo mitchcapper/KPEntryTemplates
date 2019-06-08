@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using KeePass.Forms;
 using KeePass.Plugins;
+using KeePass.Resources;
 using KeePass.UI;
 using KeePass.Util;
 using KeePassLib;
@@ -48,50 +50,38 @@ namespace KPEntryTemplates {
 			if (form == null)
 				return;
 			form.Shown += form_Shown;
-            form.Resize += form_Resize;
+			form.Resize += form_Resize;
 		}
 
-        void form_Shown(object sender, EventArgs e)
-        {
-            PwEntryForm form = sender as PwEntryForm;
-            new EntryTemplateManager(m_host, form);
-        }
+		private void form_Shown(object sender, EventArgs e) {
+			PwEntryForm form = sender as PwEntryForm;
+			new EntryTemplateManager(m_host, form);
+			//form_Resize(sender, e);
 
-        void form_Resize(object sender, EventArgs e)
-        {
-            // on form resize, change edits and bottom button widths;
-            // also reposition right side buttons
+		}
 
-            PwEntryForm form = sender as PwEntryForm;
+		void form_Resize(object sender, EventArgs e) {
 
-            TabControl tabControl = null;
-            foreach (Control c in form.Controls) {
-                if (c is TabControl) {
-                    tabControl = c as TabControl;
-                    break;
-                }
-            }
-            if (tabControl == null) return;
 
-            TabPage tmplPage = tabControl.TabPages[0];
-            if (tmplPage.Text != "Template") return;
+			PwEntryForm form = sender as PwEntryForm;
 
-            foreach (Control c in tmplPage.Controls) {
-                if (!(c is Label)) {
-                    if (c is CheckBox) {
-                        c.Left = tmplPage.Width - ((c.Width + 55) / 2);
-                    } else if (c is Button) {
-                        if ((c as Button).Text == "Remove As Template Child") {
-                            c.Width = tmplPage.Width - c.Left - 55;
-                        } else {
-                            c.Left = tmplPage.Width - ((c.Width + 55) / 2);
-                        }
-                    } else {
-                        c.Width = tmplPage.Width - c.Left - 55;
-                    }
-                }
-            }
-        }
+			TabControl tabControl = null;
+			foreach (Control c in form.Controls) {
+				if (c is TabControl) {
+					tabControl = c as TabControl;
+					break;
+				}
+			}
+			if (tabControl == null) return;
+
+			TabPage tmplPage = tabControl.TabPages[0];
+			if (tmplPage.Text != "Template")
+				return;
+			EntryTemplateManager.SetBaseSizes(tmplPage);
+			foreach (Control c in tmplPage.Controls) 
+				EntryTemplateManager.UpdateControlSize(c);
+			
+		}
 
 		void EntryTemplates_EntryCreating(object sender, TemplateEntryEventArgs e) {
 			EntryTemplateManager.InitChildEntry(e.TemplateEntry, e.Entry);
@@ -115,7 +105,7 @@ namespace KPEntryTemplates {
 				return;
 			PwEntry[] entries = m_host.MainWindow.GetSelectedEntries();
 			foreach (PwEntry entry in entries) {
-				EntryTemplateManager.set_entry_template_parent(m_host.Database,entry, parent);
+				EntryTemplateManager.set_entry_template_parent(m_host.Database, entry, parent);
 			}
 			m_host.MainWindow.UpdateUI(false, null, false, m_host.MainWindow.GetSelectedGroup(), false, null, true);
 		}
@@ -137,7 +127,7 @@ namespace KPEntryTemplates {
 		}
 		public override string UpdateUrl {
 			get {
-				return "http://mitchcapper.com/keepass_versions.txt?KPET";
+				return "http://mitchcapper.com/keepass_versions.txt?KPET&KPV=" + PwDefs.VersionString;
 			}
 		}
 		public override void Terminate() {
