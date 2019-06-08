@@ -10,11 +10,10 @@ using KeePassLib.Security;
 using KeePassLib.Utility;
 using KeePass.UI;
 using KeePass.Resources;
+using System.Threading.Tasks;
 
 namespace KPEntryTemplates {
 	partial class EntryTemplateManager {
-		private const int TAB_WIDTH = 465;
-		private const int TAB_HEIGHT = 350;
 
 		private PwEntryForm form;
 		private IPluginHost m_host;
@@ -102,8 +101,7 @@ namespace KPEntryTemplates {
 					entry_is_child = false;
 					buttons_show();
 					return;
-				}					
-
+				}
 			init_child_vals();
 		}
 		public static bool entry_is_in_template_group(IPluginHost m_host, PwGroup group) {

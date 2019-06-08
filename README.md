@@ -4,6 +4,7 @@ KP Entry Templates for KeePass 2.x
 
 CHANGES
 -----
+- 8.0 High DPI support completely redone, complete re-work of KeePass resize support properly handle the UI. Multi-line textboxes also improved.
 - 7.8 KeePass 2.39> support, better password confirmation support, breaks keepass support < 2.39. Rich Textbox support.
 - 7.7 KeePassResize support thanks to @h-a-s-h
 - 7.6 ComboBox width fixed to full size (rather than smallest entry)
@@ -20,7 +21,11 @@ OVERVIEW
 -----
 KPEntryTemplates (KPET) is a plug-in that is supposed to make it easier for 
 KeePass to be used for storing additional things than web logins and extend 
-the best templating system.  The primary interface for the plug-in is an 
+the built in templating system by providing a UI. 
+
+Bug reports and feature requests should be filed in GitHub while general discussion in https://gitter.im/KeePassUnofficial/Plugins 
+
+The primary interface for the plug-in is an 
 extra tab that shows up in the main Add Entry form.   By default going to 
 the tab on a new entry will present you with one of two buttons, 
 "Init As Template" or "Set Template Parent".  "Init As Template" shows up 
@@ -38,7 +43,7 @@ and is the actual field name the field is stored under.    Finally, the
 of which are self explanatory.  A few may require some explanation:
 
 - "Inline" is a standard textbox
-- "Rich Textbox" is a rich textbox (URL highlighting and such like the normal notes box). In KeePass 2.39 enter keys do NOT insert a return (but can be manually copied into it). We are working to resolve this with KeePass. Until it is the notes field option will use the standard textbox.
+- "Rich Textbox" is a rich textbox (URL highlighting and such like the normal notes box).
 - "Popout" shows the standard custom field editing window
 
 - "Divider" is not a field at all, but rather can be used to section the 

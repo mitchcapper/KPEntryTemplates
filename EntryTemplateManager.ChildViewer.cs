@@ -39,9 +39,7 @@ namespace KPEntryTemplates {
 
 			}
 			page.Controls.Add(client_remove_button);
-			form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			form.AutoScaleMode = AutoScaleMode.Font;
-			
+
 		}
 		private SecureTextBoxEx current_password_field;
 		private SecureTextBoxEx current_password_confirm_field;
@@ -106,9 +104,10 @@ namespace KPEntryTemplates {
 			m_ctxPwGenProfiles.Size = new Size(208, 22);
 			m_ctxPwGenProfiles.Text = "Generate Using Profile";
 			m_btnGenPw = new Button();
-			m_btnGenPw.Image = Resources.Resources.B15x13_KGPG_Gen;
+			m_btnGenPw.Image = DpiUtil.ScaleImage(Resources.Resources.B15x13_KGPG_Gen, false);
 			m_btnGenPw.Location = new Point(423, 90);
-			m_btnGenPw.Size = new Size(32, 23);
+
+			m_btnGenPw.Size = new Size(DpiUtil.ScaleIntX(32), DpiUtil.ScaleIntY(23));
 			m_btnGenPw.UseVisualStyleBackColor = true;
 			m_btnGenPw.Click += OnPwGenClick;
 			m_ctxPwGen = new ContextMenuStrip();
@@ -159,21 +158,88 @@ namespace KPEntryTemplates {
 			}
 			return ret;
 		}
-
-		//private int ScaleX(int i) {
-		//	return DpiUtil.ScaleIntX(i);
-		//}
-		//private int ScaleY(int i) {
-		//	return DpiUtil.ScaleIntY(i);
-		//}
-
+		public static void UpdateControlSize(Control control) {
+			var template = control.Tag as EntryTemplate;
+			if (template == null) {
+				return;
+			}
+			SetControlSizing(template, control);
+		}
+		private static void SetControlSizing(EntryTemplate template, Control control) {
+			int? width = CONTROL_WIDTH;
+			int? left = LEFT_CONTROL_OFFSET;
+			int? top=null;
+			int? height=null;
+			if (template == null) {
+				if (control is Label) {
+					width = LABEL_WIDTH;
+					left = 0;
+				}
+			} else {
+				switch (template.type) {
+					case "DataGridView":
+						left = null;
+						
+						width = PAGE_WIDTH;
+						height = PAGE_HEIGHT - BUTTON_HEIGHT - DpiUtil.ScaleIntY(10);
+						if (control is Button) {
+							top = height + DpiUtil.ScaleIntY(5);
+							height = BUTTON_HEIGHT;
+							width = PAGE_WIDTH - DpiUtil.ScaleIntX(140) - DpiUtil.ScaleIntX(45);
+						}
+						break;
+					case "Divider":
+						width = CONTROL_WIDTH + LABEL_WIDTH;
+						break;
+					case "Checkbox":
+						width = null;
+						break;
+					case "Inline URL":
+						width = CONTROL_WIDTH - 30;
+						if (control is LinkLabel) {
+							left = left + width + DpiUtil.ScaleIntX(10);
+							width = null;
+						}
+						break;
+					case "Protected Inline":
+						if (control is CheckBox || control is Button) {
+							left = left + width + DpiUtil.ScaleIntX(10);
+							width = null;
+						}
+						break;
+				}
+			}
+			if (left != null)
+				control.Left = (int)left;
+			if (width != null)
+				control.Width = (int)width;
+			if (top != null)
+				control.Top = (int)top;
+			if (height != null)
+				control.Height = (int)height;
+		}
+		public static void SetBaseSizes(TabPage page) {
+			LABEL_WIDTH = DpiUtil.ScaleIntX(130);
+			LEFT_CONTROL_OFFSET = LABEL_WIDTH + DpiUtil.ScaleIntX(5);
+			CONTROL_WIDTH = page.ClientSize.Width - LABEL_WIDTH - DpiUtil.ScaleIntX(70);//minus some so scrolling doesnt cause an issue
+			PAGE_WIDTH = page.ClientSize.Width;
+			PAGE_HEIGHT = page.ClientSize.Height;
+			BUTTON_HEIGHT = DpiUtil.ScaleIntY(20);
+		}
+		private static int BUTTON_HEIGHT;
+		private static int CONTROL_WIDTH;
+		private static int LEFT_CONTROL_OFFSET;
+		private static int LABEL_WIDTH;
+		private static int PAGE_WIDTH;
+		private static int PAGE_HEIGHT;
 		private bool InitializeChildView(TabPage page, String uuid) {
 			if (et_to_label != null) {
 				add_child_items_to_tab(page);
 				return true;
 			}
-
+			SetBaseSizes(page);
 			init_pwgen_button();
+
 			et_to_label = new Dictionary<EntryTemplate, Label>();
 			et_to_control = new Dictionary<EntryTemplate, Control>();
 			et_to_secure_edit = new Dictionary<EntryTemplate, SecureTextBoxEx>();
@@ -181,7 +247,7 @@ namespace KPEntryTemplates {
 			SecureTextBoxEx entry_pass = null;
 			SecureTextBoxEx entry_pass_confirm = null;
 
-			int control_offset_y = 10;
+			int control_offset_y = DpiUtil.ScaleIntY(10);
 			PwUuid par_uuid = new PwUuid(KeePassLib.Utility.MemUtil.HexStringToByteArray(uuid));
 			PwEntry par_template = m_host.Database.RootGroup.FindEntry(par_uuid, true);
 			if (par_template == null)
@@ -189,19 +255,15 @@ namespace KPEntryTemplates {
 			if (par_template.Strings.Get("_etm_template") == null)
 				return false;
 			List<EntryTemplate> cur = parse_entry(par_template.Strings);
-			const int LABEL_WIDTH = 130;
-			const int LEFT_CONTROL_OFFSET = LABEL_WIDTH + 5;
-			int CONTROL_WIDTH = (int)(page.ClientSize.Width / DpiUtil.FactorX) - LABEL_WIDTH - 95;
+
 
 			foreach (EntryTemplate t in cur) {
 				Label label = new Label();
 				label.Text = t.title + ":";
 				//label.AutoSize = false;
 				label.Top = control_offset_y;
-				label.Left = 0;
 				label.AutoSize = false;
-				label.Width = LABEL_WIDTH;
-
+				SetControlSizing(null, label);
 				label.AutoEllipsis = true;
 				label.TextAlign = ContentAlignment.MiddleRight;
 				FontUtil.AssignDefaultBold(label);
@@ -210,19 +272,15 @@ namespace KPEntryTemplates {
 				if (t.type == "Divider") {
 					label.Font = new Font(label.Font.FontFamily, label.Font.Size * 1.1f, FontStyle.Bold | FontStyle.Underline);
 					label.TextAlign = ContentAlignment.BottomLeft;
-					label.Width = CONTROL_WIDTH + LABEL_WIDTH;
 					label.Text = t.title;//remove :
 					et_to_control[t] = null;
 				} else if (t.type == "Checkbox") {
 					CheckBox checkbox = new CheckBox();
 					checkbox.Top = control_offset_y;
-					checkbox.Left = LEFT_CONTROL_OFFSET;
 					et_to_control[t] = checkbox;
 				} else if (t.type == "Listbox") {
 					ComboBox combobox = new ComboBox();
 					combobox.Top = control_offset_y;
-					combobox.Left = LEFT_CONTROL_OFFSET;
-					combobox.Width = CONTROL_WIDTH;
 					et_to_control[t] = combobox;
 					if (!String.IsNullOrEmpty(t.options)) {
 						String[] opts = t.options.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -232,9 +290,7 @@ namespace KPEntryTemplates {
 				} else if (t.type == "Date" || t.type == "Time" || t.type == "Date Time") {
 					DateTimePicker picker = new DateTimePicker();
 					picker.Top = control_offset_y;
-					picker.Left = LEFT_CONTROL_OFFSET;
 					picker.CustomFormat = "";
-					picker.Width = CONTROL_WIDTH;
 					picker.Format = DateTimePickerFormat.Custom;
 					if (t.type == "Date" || t.type == "Date Time")
 						picker.CustomFormat = System.Globalization.DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
@@ -248,14 +304,12 @@ namespace KPEntryTemplates {
 				} else if (t.type == "RichTextbox") {
 					var box = new CustomRichTextBoxEx();
 					box.Top = control_offset_y;
-					box.Left = LEFT_CONTROL_OFFSET;
-					box.Width = CONTROL_WIDTH;
 					int lines = LinesFromOption(t.options);
 					box.Multiline = lines > 1;
-					box.Height = 18 * lines + 10;
+					box.Height = DpiUtil.ScaleIntY(13) * lines + DpiUtil.ScaleIntY(10);
 					box.CtrlEnterAccepts = true;
 					box.ScrollBars = RichTextBoxScrollBars.Both;
-					control_offset_y += 18 * (lines - 1);
+					control_offset_y += DpiUtil.ScaleIntY(13) * (lines - 1);
 					UIUtil.PrepareStandardMultilineControl(box, true, lines > 1);
 
 					et_to_control[t] = box;
@@ -267,15 +321,13 @@ namespace KPEntryTemplates {
 					if (t.type == "Protected Inline")
 						box = new SecureTextBoxEx();
 					box.Top = control_offset_y;
-					box.Left = LEFT_CONTROL_OFFSET;
-					box.Width = t.type == "Inline URL" ? CONTROL_WIDTH - 30 : CONTROL_WIDTH;
 
 					if (lines > 1) {
 						box.Multiline = true;
 						box.AcceptsReturn = true;
-						box.Height = 13 * lines + 10;
+						box.Height = DpiUtil.ScaleIntY(13) * lines + DpiUtil.ScaleIntY(10);
 						box.ScrollBars = ScrollBars.Both;
-						control_offset_y += 13 * (lines - 1);
+						control_offset_y += DpiUtil.ScaleIntY(13) * (lines - 1);
 					}
 					et_to_control[t] = box;
 					if (t.type == "Protected Inline") {
@@ -283,18 +335,17 @@ namespace KPEntryTemplates {
 						if (t.fieldName != "@confirm") {
 							CheckBox chk = new CheckBox();
 							chk.Appearance = Appearance.Button;
-							chk.Image = Resources.Resources.B17x05_3BlackDots;
-							chk.Location = new Point(box.Left + box.Width + 10, control_offset_y);
-							chk.Size = new Size(32, 23);
+							chk.Image = DpiUtil.ScaleImage(Resources.Resources.B17x05_3BlackDots, false);
+							chk.Size = new Size(DpiUtil.ScaleIntX(32), DpiUtil.ScaleIntY(23));
 							chk.TextAlign = ContentAlignment.MiddleCenter;
 							chk.UseVisualStyleBackColor = true;
-							chk.Tag = t;
+							chk.Top = control_offset_y;
 							chk.Checked = true;
 							chk.CheckedChanged += chk_CheckedChanged;
 							et_to_control2[t] = chk;
 						} else {
 							et_to_control2[t] = m_btnGenPw;
-							et_to_control2[t].Location = new Point(box.Left + box.Width + 10, control_offset_y);
+							et_to_control2[t].Top = control_offset_y;
 							current_password_confirm_field = box as SecureTextBoxEx;
 							current_password_confirm_field_txt = box;
 							entry_pass_confirm = box as SecureTextBoxEx;
@@ -305,8 +356,8 @@ namespace KPEntryTemplates {
 					} else if (t.type == "Inline URL") {
 						var link = new LinkLabel { Text = "Open" };
 						link.LinkClicked += (sender, args) => WinUtil.OpenUrl(box.Text ?? "", form.EntryRef);
-						link.Location = new Point(box.Left + box.Width + 10, control_offset_y);
-						link.Width = 50;
+						link.Top = control_offset_y;
+						link.Width = DpiUtil.ScaleIntY(50);
 						et_to_control2[t] = link;
 					}
 
@@ -315,26 +366,30 @@ namespace KPEntryTemplates {
 					btn.Text = "View/Edit";
 					if (t.type == "Protected Popout")
 						btn.Text = "View/Edit Secure";
-					btn.Tag = t;
-					btn.Width = CONTROL_WIDTH;
-					btn.Left = LEFT_CONTROL_OFFSET;
-					//btn.Height = 20;
+					btn.Height = BUTTON_HEIGHT;
 					btn.Top = control_offset_y;
+
 					btn.Click += btn_popout_Click;
 					et_to_control[t] = btn;
 				}
-
-				control_offset_y += 30;
+				control_offset_y += DpiUtil.ScaleIntY(30);
+				if (et_to_control[t] != null) { //only the divider does not
+					et_to_control[t].Tag = t;
+					SetControlSizing(t, et_to_control[t]);
+				}
+				if (et_to_control2.ContainsKey(t)) {
+					et_to_control2[t].Tag = t;
+					SetControlSizing(t, et_to_control2[t]);
+				}
 			}
 			client_remove_button = new Button();
 			client_remove_button.Text = "Remove As Template Child";
-			client_remove_button.Width = CONTROL_WIDTH;
-			client_remove_button.Left = LEFT_CONTROL_OFFSET;
+			client_remove_button.Height = BUTTON_HEIGHT;
+			SetControlSizing(null, client_remove_button);
 			//client_remove_button.Height = 20;
 			client_remove_button.Top = control_offset_y;
 			client_remove_button.Click += client_remove_button_Click;
-			if (entry_pass_confirm != null && entry_pass != null) {
-			}
+
 			add_child_items_to_tab(page);
 			return true;
 		}
