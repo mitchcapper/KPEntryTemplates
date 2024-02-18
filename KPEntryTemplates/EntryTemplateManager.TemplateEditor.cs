@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using KeePass.UI;
 using KeePassLib;
@@ -131,8 +132,10 @@ namespace KPEntryTemplates {
 			colOpt.UseColumnTextForButtonValue = true;
 			colOpt.Text = "Opt";
 			colOpt.ToolTipText = "Option";
+			colOpt.SortMode = DataGridViewColumnSortMode.NotSortable;
 			colOptionValue.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 			colOptionValue.Visible = false;
+			colOptionValue.SortMode = DataGridViewColumnSortMode.NotSortable;
 			colOptionValue.Name = "colOptionValue";
 			colOptionValue.Width = 0;
 
@@ -156,7 +159,7 @@ namespace KPEntryTemplates {
 
 		}
 		private void dataGridView_CellClick(object sender, DataGridViewCellEventArgs e) {
-			if (e.ColumnIndex != dataGridView.Columns["colOpt"].Index)
+			if (e.RowIndex == -1 || e.ColumnIndex != dataGridView.Columns["colOpt"].Index)
 				return;
 			DataGridViewRow row = dataGridView.Rows[e.RowIndex];
 			if (!(row.Cells["colOpt"] as DataGridViewDisableButtonCell).Enabled)
