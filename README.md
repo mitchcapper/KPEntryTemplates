@@ -4,6 +4,7 @@ KP Entry Templates for KeePass 2.x
 
 CHANGES
 -----
+- 9.0 Switch to SDK style project, reorg files, use plgx-build-tasks to modernize building, samples by @IncPlusPlus
 - 8.0 High DPI support completely redone, complete re-work of KeePass resize support properly handle the UI. Multi-line textboxes also improved.
 - 7.8 KeePass 2.39> support, better password confirmation support, breaks keepass support < 2.39. Rich Textbox support.
 - 7.7 KeePassResize support thanks to @h-a-s-h
@@ -23,7 +24,7 @@ KPEntryTemplates (KPET) is a plug-in that is supposed to make it easier for
 KeePass to be used for storing additional things than web logins and extend 
 the built in templating system by providing a UI. 
 
-Bug reports and feature requests should be filed in GitHub while general discussion in https://gitter.im/KeePassUnofficial/Plugins 
+Bug reports, feature requests, and general discussion should now all happen on the GitHub project page.
 
 The primary interface for the plug-in is an 
 extra tab that shows up in the main Add Entry form.   By default going to 
@@ -142,4 +143,10 @@ template in the "Title" field.
 Examples
 -----
 
-You can find two sample database files in the Samples folder click view file then the download icon.  Each database has a blank password (check the password box but leave it empty).  `StarterWithTemplates.kdbx` is like the default Starter DB but includes some template example entries and template parents.  The `Templates.kdbx` has just the template parents.  You can import it into your existing file or use it as a starter database.  These samples were created by @IncPlusPlus thank you!
+You can find two sample database files in the Samples folder click view file then the download icon.  Each database has a blank password (check the password box but leave it empty).  [StarterWithTemplates.kdbx](https://github.com/mitchcapper/KPEntryTemplates/blob/master/Samples/StarterWithTemplates.kdbx) is like the default Starter DB but includes some template example entries and template parents.  The [Templates.kdbx](https://github.com/mitchcapper/KPEntryTemplates/blob/master/Samples/Templates.kdbx) has just the template parents.  You can import it into your existing file or use it as a starter database.
+
+Credits
+-----
+- Thanks to [@WalterPG](https://github.com/walterpg) and their [plgx-build-tasks](https://github.com/walterpg/plgx-build-tasks) for modernizing the PLGX build process.
+- Thanks to [@IncPlusPlus](https://github.com/IncPlusPlus) for creating the samples
+- Thanks to [@h-a-s-h](https://github.com/h-a-s-h) for KeePassResize support
