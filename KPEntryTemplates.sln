@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPEntryTemplates", "KPEntryTemplates.csproj", "{A84A72E3-D016-47FD-BED1-24C4275CBA07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KPEntryTemplates", "KPEntryTemplates/KPEntryTemplates.csproj", "{A84A72E3-D016-47FD-BED1-24C4275CBA07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
