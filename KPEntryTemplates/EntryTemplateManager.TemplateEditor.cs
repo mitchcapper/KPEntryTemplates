@@ -216,7 +216,7 @@ namespace KPEntryTemplates {
 		void box_DropDown(object sender, EventArgs e) {
 			((DataGridViewComboBoxEditingControl)sender).BackColor = Color.White;
 		}
-		private void SetRowOptionEnabled(DataGridViewRow row, String type) {
+		private async void SetRowOptionEnabled(DataGridViewRow row, String type) {
 			bool opt_enabled = false;
 			switch (type) {
 				case "Inline":
@@ -228,6 +228,8 @@ namespace KPEntryTemplates {
 			}
 
 			(row.Cells["colOpt"] as DataGridViewDisableButtonCell).Enabled = opt_enabled;
+			await Task.Delay(300);
+			dataGridView.Invalidate();//make sure opt button refreshes right away
 		}
 		private void col_type_box_SelectedIndexChanged(object sender, EventArgs e) {
 			DataGridViewCell cell = dataGridView.CurrentCell;
