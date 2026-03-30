@@ -162,7 +162,7 @@ namespace KPEntryTemplates {
 				var entry_list = new List<object>();
 				foreach (var entry in entries) {
 					var lvi = new ListViewItem(entry.Strings.ReadSafe(PwDefs.TitleField),
-						entry.CustomIconUuid == PwUuid.Zero ? (int)entry.IconId : m_host.Database.GetCustomIconIndex(entry.CustomIconUuid));
+						entry.CustomIconUuid == PwUuid.Zero ? (int)entry.IconId : ((int)PwIcon.Count + m_host.Database.GetCustomIconIndex(entry.CustomIconUuid)));
 					lvi.Tag = entry;
 					entry_list.Add(lvi);
 				}
